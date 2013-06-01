@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
+
+.counties {
+	fill: none;
+}
+
+.states {
+	fill: none;
+	stroke: #fff;
+	stroke-linejoin: round;
+}
+
+.q0 { fill:rgb(247,251,255); }
+.q1 { fill:rgb(222,235,247); }
+.q2 { fill:rgb(198,219,239); }
+.q3 { fill:rgb(158,202,225); }
+.q4 { fill:rgb(107,174,214); }
+.q5 { fill:rgb(66,146,198); }
+.q6 { fill:rgb(33,113,181); }
+.q7 { fill:rgb(8,81,156); }
+.q8 { fill:rgb(8,48,107); }
+
+.errorClass{ fill : lightred;}
+.worked{fill:rgb(8,48,107); }
+}
+
+</style>
+<body>
+<script src="http://d3js.org/d3.v3.min.js"></script>
+<script src="http://d3js.org/queue.v1.min.js"></script>
+<script src="http://d3js.org/topojson.v1.min.js"></script>
+<script src="fixData.js"></script>
+
+<script>
+
+var width = 960,
+		height = 500;
+
+var statById = d3.map();
+
+var quantile = d3.scale.quantile()
+		.range(d3.range(9).map(function(i){return "q" + i;}));
+
+var path = d3.geo.path();
+
+var svg = d3.select("body").append("svg")
+		.attr("width", width)
+		.attr("height", height);
+
+queue()
+		.defer(d3.json, "us.json")    
+		.defer(d3.json, "dataWithFIPS.json")
+		.await(ready);
+
+errorArray = [];
+function ready(error, us, counties) {
+	z = counties;
+	z.forEach(function(d){
+		d.Submissions = +d.Submissions.replace(",","");
+		d.Total = +d.Total.replace(",","");
+		statById.set(+d.fips, d);
+	});
+
+	quantile.domain(counties.map(function(d){return d.Total;}));
+
+	svg.append("g")
+			.attr("class", "counties")
+		.selectAll("path")
+			.data(topojson.feature(us, us.objects.counties).features)
+		.enter().append("path")
+			.attr("class", function(d) { 
+				if (statById.get(d.id)){
+					return quantile(statById.get(d.id).Total);
+				}
+			else{
+				errorArray.push(d.id);
+				return "errorClass";
+			}})
+			.attr("d", path);
+
+	svg.append("path")
+			.datum(topojson.mesh(us, us.objects.states, function(a, b) { return a !== b; }))
+			.attr("class", "states")
+			.attr("d", path);
+}
+
+
+
+</script>
