@@ -12,19 +12,6 @@
 	stroke-linejoin: round;
 }
 
-.q0 { fill:rgb(247,251,255); }
-.q1 { fill:rgb(222,235,247); }
-.q2 { fill:rgb(198,219,239); }
-.q3 { fill:rgb(158,202,225); }
-.q4 { fill:rgb(107,174,214); }
-.q5 { fill:rgb(66,146,198); }
-.q6 { fill:rgb(33,113,181); }
-.q7 { fill:rgb(8,81,156); }
-.q8 { fill:rgb(8,48,107); }
-
-.errorClass{ fill : white;}
-.worked{fill:rgb(8,48,107); }
-}
 
 </style>
 <body>
@@ -46,7 +33,7 @@ var colorRange = ['rgb(247,251,255)',
 									'rgb(66,146,198)',
 									'rgb(33,113,181)',
 									'rgb(8,81,156)',
-									'rgb(8,48,107)']									]
+									'rgb(8,48,107)'];
 
 var quantile = d3.scale.quantile()
 		.range(colorRange);
@@ -89,7 +76,8 @@ function ready(error, us, countiesJSON, countyPopJSON) {
 		.enter().append("path")
 
 		countyShapes
-			.attr("d", path);
+			.attr("d", path)		
+			.attr("fill", "rgb(10,10,10");
 
 	svg.append("path")
 			.datum(topojson.mesh(us, us.objects.states, function(a, b) { return a !== b; }))
@@ -99,14 +87,16 @@ function ready(error, us, countiesJSON, countyPopJSON) {
 
 function updateMap(key){
 	quantile.domain(counties.map(function(d){return d[key];}));
-	countyShapes.attr("class", function(d) { 
-				if (statById.get(d.id)){
-					return quantile(statById.get(d.id)[key]);
-				}
+	countyShapes
+		.transition().duration(1000).ease(d3.ease('linear'))
+		.attr("fill", function(d) { 
+			if (statById.get(d.id)){
+				return quantile(statById.get(d.id)[key]);
+			}
 			else{
 				errorArray.push(d.id);
-				return "errorClass";
-			}})
+				return "rbg(1,1,1)";
+		}});
 }
 
 </script>
