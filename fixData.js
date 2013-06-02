@@ -1,4 +1,4 @@
-d3.csv('county.csv', function(countyData){
+d3.csv('countyEdit.csv', function(countyData){
 	d3.csv('fips.csv', function(fipsData){
 		d3.tsv('fips.tsv', function(tsvData){
 			
@@ -25,7 +25,7 @@ d3.csv('county.csv', function(countyData){
 				}
 			});
 
-			//console.log(JSON.stringify(countys));
+			console.log(JSON.stringify(countys));
 
 		});
 	});
@@ -103,7 +103,7 @@ function getFIPS(stateAbv, countyName){
 					.replace("Saint", "St.");
 	for (var i = 0; i < tsv.length; i++){
 		if (stateName == tsv[i].stateName && countyName == tsv[i].countyName){
-			return tsv.id;
+			return tsv[i].id;
 		}
 	}
 	eArray.push(stateAbv + " " + countyName);

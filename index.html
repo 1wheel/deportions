@@ -22,7 +22,7 @@
 .q7 { fill:rgb(8,81,156); }
 .q8 { fill:rgb(8,48,107); }
 
-.errorClass{ fill : lightred;}
+.errorClass{ fill : white;}
 .worked{fill:rgb(8,48,107); }
 }
 
@@ -31,8 +31,6 @@
 <script src="http://d3js.org/d3.v3.min.js"></script>
 <script src="http://d3js.org/queue.v1.min.js"></script>
 <script src="http://d3js.org/topojson.v1.min.js"></script>
-<script src="fixData.js"></script>
-
 <script>
 
 var width = 960,
@@ -40,8 +38,18 @@ var width = 960,
 
 var statById = d3.map();
 
+var colorRange = ['rgb(247,251,255)',
+									'rgb(222,235,247)',
+									'rgb(198,219,239)',
+									'rgb(158,202,225)',
+									'rgb(107,174,214)',
+									'rgb(66,146,198)',
+									'rgb(33,113,181)',
+									'rgb(8,81,156)',
+									'rgb(8,48,107)']									]
+
 var quantile = d3.scale.quantile()
-		.range(d3.range(9).map(function(i){return "q" + i;}));
+		.range(colorRange);
 
 var path = d3.geo.path();
 
@@ -52,32 +60,35 @@ var svg = d3.select("body").append("svg")
 queue()
 		.defer(d3.json, "us.json")    
 		.defer(d3.json, "dataWithFIPS.json")
+		.defer(d3.json, "countyPop.json")
 		.await(ready);
 
 errorArray = [];
-function ready(error, us, counties) {
-	z = counties;
-	z.forEach(function(d){
+
+var counties;
+var countyPop
+function ready(error, us, countiesJSON, countyPopJSON) {
+	counties = countiesJSON;
+	countyPop = countyPopJSON;
+	counties.forEach(function(d){
 		d.Submissions = +d.Submissions.replace(",","");
-		d.Total = +d.Total.replace(",","");
+		d.totalReturns = +d['Total Matches'].replace(",","");
+		d.totalMatches = +d['Total Returns'].replace(",","");
+		d.subPerCap = d.Submissions/(countyPop[d.fips]);
+		d.totalMatchesPerCap = d['Total Matches']/(countyPop[d.fips])*10000;
+		d.totalReturnsPerCap = d['Total Returns']/(countyPop[d.fips])*10000;
 		statById.set(+d.fips, d);
 	});
 
-	quantile.domain(counties.map(function(d){return d.Total;}));
+	quantile.domain(counties.map(function(d){return d.subPerCap;}));
 
-	svg.append("g")
+	countyShapes = svg.append("g")
 			.attr("class", "counties")
 		.selectAll("path")
 			.data(topojson.feature(us, us.objects.counties).features)
 		.enter().append("path")
-			.attr("class", function(d) { 
-				if (statById.get(d.id)){
-					return quantile(statById.get(d.id).Total);
-				}
-			else{
-				errorArray.push(d.id);
-				return "errorClass";
-			}})
+
+		countyShapes
 			.attr("d", path);
 
 	svg.append("path")
@@ -86,6 +97,16 @@ function ready(error, us, counties) {
 			.attr("d", path);
 }
 
-
+function updateMap(key){
+	quantile.domain(counties.map(function(d){return d[key];}));
+	countyShapes.attr("class", function(d) { 
+				if (statById.get(d.id)){
+					return quantile(statById.get(d.id)[key]);
+				}
+			else{
+				errorArray.push(d.id);
+				return "errorClass";
+			}})
+}
 
 </script>
