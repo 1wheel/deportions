@@ -19,7 +19,7 @@
 			<option value="totalMatches">Database Matches</option>
 			<option value="totalReturns">Returns from Matches</option>
 		</select>			
-		: <span id="magicNum">(magic num here)</span>
+		: <span id="magicNum"></span>
 
 	</form>
 
@@ -27,6 +27,10 @@
 
 <svg id="map"></svg>
 
+<div id = 'links'>
+	<a href = "http://migrahack.coshimel.com">about</a> &#124;
+	<a href = "http://www.ice.gov/doclib/foia/sc-stats/nationwide_interop_stats-fy2013-to-date.pdf">data</a> &#124; 
+	<a href = "https://github.com/1wheel/deportions">github</a>
 </div>
 
 <script src="http://d3js.org/d3.v3.min.js"></script>
@@ -34,7 +38,7 @@
 <script src="http://d3js.org/topojson.v1.min.js"></script>
 <script>
 
-var width = 960,
+var width = 800,
 	height = 500;
 
 var statById = d3.map();
@@ -61,6 +65,7 @@ var svg = d3.select("#map")
     	.call(d3.behavior.zoom().on("zoom", redraw))
   	.append('svg:g');
 
+svg.attr("transform", "scale( " + .9 + ")");
 
 function redraw() {
   console.log("here", d3.event.translate, d3.event.scale);
@@ -84,7 +89,7 @@ tooltip.append("span").attr("id", "countyName")
 
 queue()
 	.defer(d3.json, "us.json")    
-	.defer(d3.json, "dataWithFIPS.json")
+	.defer(d3.csv, "data.csv")
 	.defer(d3.json, "countyPop.json")
 	.await(ready);
 
@@ -95,16 +100,21 @@ function ready(error, us, countiesJSON, countyPopJSON) {
 	counties = countiesJSON;
 	countyPop = countyPopJSON;
 	counties.forEach(function(d){
-		d.Submissions = +d.Submissions.replace(/,/g,"");
-		d.totalReturns = +d['Total Returns'].replace(",","");
-		d.totalMatches = +d['Total Matches'].replace(",","");
-		d.population = countyPop[d.fips];
-		d.SubmissionsPerCap = d.Submissions/d.population;
-		d.totalMatchesPerCap = d.totalReturns/d.population;
-		d.totalReturnsPerCap = d.totalMatches/d.population;
-		d.none = '-';
-		statById.set(+d.fips, d);
-		if (isNaN(d.Submissions)){
+		try{
+			d.Submissions = +d.Submissions.replace(/,/g,"");
+			d.totalReturns = +d['Total Returns'].replace(",","");
+			d.totalMatches = +d['Total Matches'].replace(",","");
+			d.population = countyPop[d.fips];
+			d.SubmissionsPerCap = d.Submissions/d.population;
+			d.totalMatchesPerCap = d.totalReturns/d.population;
+			d.totalReturnsPerCap = d.totalMatches/d.population;
+			d.none = '-';
+			statById.set(+d.fips, d);
+			if (isNaN(d.Submissions)){
+			}
+		}
+		catch(e){
+			//remove double lines of csv
 		}
 	});
 
@@ -155,11 +165,11 @@ var printDetails = [
 					{'var': 'totalMatches', 'print': 'Matches'},
 					{'var': 'none', 'print': ''},
 					{'var': 'Felony Returns', 'print': 'Felony Returns'},
-					{'var': 'Convicted\nCriminals L1', 'print': 'Misdemeanor Returns'},
+					{'var': 'Convicted Criminals L1', 'print': 'Misdemeanor Returns'},
 					{'var': 'No Criminal Conviction Return', 'print': 'Paperwork Returns'},
 					{'var': 'none', 'print': ''},
 					{'var': 'population', 'print': 'Population'},
-					{'var': 'Activation\nDate', 'print': 'Start Date'}];
+					{'var': 'Activation Date', 'print': 'Start Date'}];
 
 function updateDetails(county){
 	tooltip.selectAll("div").remove();
