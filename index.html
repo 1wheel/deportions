@@ -56,7 +56,18 @@ var path = d3.geo.path();
 
 var svg = d3.select("#map")
 		.attr("width", width)
-		.attr("height", height);
+		.attr("height", height)  
+	.append('svg:g')
+    	.call(d3.behavior.zoom().on("zoom", redraw))
+  	.append('svg:g');
+
+
+function redraw() {
+  console.log("here", d3.event.translate, d3.event.scale);
+  svg.attr("transform",
+      "translate(" + d3.event.translate + ")"
+      + " scale(" + d3.event.scale + ")");
+}
 
 d3.select("#selectPer")
 		.on("change", function(){menuChange();});
@@ -84,7 +95,6 @@ function ready(error, us, countiesJSON, countyPopJSON) {
 	counties = countiesJSON;
 	countyPop = countyPopJSON;
 	counties.forEach(function(d){
-		d.SubmissionOLD = d.Submissions;
 		d.Submissions = +d.Submissions.replace(/,/g,"");
 		d.totalReturns = +d['Total Returns'].replace(",","");
 		d.totalMatches = +d['Total Matches'].replace(",","");

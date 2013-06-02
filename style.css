@@ -24,8 +24,9 @@ body{
 
 .states {
 	fill: none;
-	stroke: #fff;
-	stroke-linejoin: round;
+	stroke: grey;
+	stroke-linejoin: round;	
+	stroke-width:1;
 }
 
 .select {
@@ -42,4 +43,8 @@ body{
 
 #selectType{
 	width: 280px;
+}
+
+svg{
+	margin-top: 10px;
 }
