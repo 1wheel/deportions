@@ -18,11 +18,13 @@ body{
 
 .counties {
 	fill: none;
+	stroke: grey;
+	stroke-width:.2;
 }
 
 .states {
 	fill: none;
-	stroke: grey;
+	stroke: #fff;
 	stroke-linejoin: round;
 }
 

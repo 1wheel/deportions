@@ -18,7 +18,7 @@
 			<option value="totalMatches">Database Matches</option>
 			<option value="totalReturns">Returns from Matches</option>
 		</select>			
-		<span id="number">(magic num here)</span>
+		: <span id="magicNum">(magic num here)</span>
 
 	</form>
 
@@ -38,15 +38,15 @@ var width = 960,
 
 var statById = d3.map();
 
-var colorRange = ['rgb(247,251,255)',
-									'rgb(222,235,247)',
-									'rgb(198,219,239)',
-									'rgb(158,202,225)',
-									'rgb(107,174,214)',
-									'rgb(66,146,198)',
-									'rgb(33,113,181)',
-									'rgb(8,81,156)',
-									'rgb(8,48,107)'];
+var colorRange = [	'rgb(247,251,255)',
+					'rgb(222,235,247)',
+					'rgb(198,219,239)',
+					'rgb(158,202,225)',
+					'rgb(107,174,214)',
+					'rgb(66,146,198)',
+					'rgb(33,113,181)',
+					'rgb(8,81,156)',
+					'rgb(8,48,107)'];
 
 var quantile = d3.scale.quantile()
 		.range(colorRange);
@@ -106,6 +106,7 @@ function ready(error, us, countiesJSON, countyPopJSON) {
 	menuChange();
 }
 
+var totalFormat = d3.format(",");
 function menuChange(){
 	var selectPer = document.getElementById('selectPer');
 	selectPerValue = selectPer.options[selectPer.selectedIndex].value; 
@@ -117,8 +118,12 @@ function menuChange(){
 	console.log(keyName);
 	updateMap(keyName);
 
-	console.log(d3.sum(counties, function(d){return d[selectPerValue];}));
+	console.log(d3.sum(counties, function(d){return d[selectTypeValue];}));
+	var num = d3.sum(counties, function(d){return d[selectTypeValue];});
+	d3.select("#magicNum")
+		.text(selectPerValue == 'PerCap' ? d3.round(num*10000/313000000, 3) + " per 100,000" : totalFormat(num));
 }
+
 
 function updateMap(key){
 	quantile.domain(counties.map(function(d){return d[key];}));
@@ -130,7 +135,7 @@ function updateMap(key){
 			}
 			else{
 				errorArray.push(d.id);
-				return "pink";
+				return "white";
 		}});
 }
 
