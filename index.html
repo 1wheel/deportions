@@ -84,15 +84,17 @@ function ready(error, us, countiesJSON, countyPopJSON) {
 	counties = countiesJSON;
 	countyPop = countyPopJSON;
 	counties.forEach(function(d){
-		d.Submissions = +d.Submissions.replace(",","");
+		d.SubmissionOLD = d.Submissions;
+		d.Submissions = +d.Submissions.replace(/,/g,"");
 		d.totalReturns = +d['Total Returns'].replace(",","");
 		d.totalMatches = +d['Total Matches'].replace(",","");
 		d.population = countyPop[d.fips];
 		d.SubmissionsPerCap = d.Submissions/d.population;
 		d.totalMatchesPerCap = d.totalReturns/d.population;
 		d.totalReturnsPerCap = d.totalMatches/d.population;
+		d.none = '-';
 		statById.set(+d.fips, d);
-		if (isNaN(d.totalReturnsPerCap)){
+		if (isNaN(d.Submissions)){
 		}
 	});
 
@@ -141,11 +143,12 @@ function ready(error, us, countiesJSON, countyPopJSON) {
 var printDetails = [
 					{'var': 'Submissions', 'print': 'Submissions'},
 					{'var': 'totalMatches', 'print': 'Matches'},
-					{'var': '', 'print': ''},
+					{'var': 'none', 'print': ''},
 					{'var': 'Felony Returns', 'print': 'Felony Returns'},
 					{'var': 'Convicted\nCriminals L1', 'print': 'Misdemeanor Returns'},
 					{'var': 'No Criminal Conviction Return', 'print': 'Paperwork Returns'},
-					{'var': '', 'print': ''},
+					{'var': 'none', 'print': ''},
+					{'var': 'population', 'print': 'Population'},
 					{'var': 'Activation\nDate', 'print': 'Start Date'}];
 
 function updateDetails(county){
@@ -153,10 +156,13 @@ function updateDetails(county){
 	tooltip.selectAll("div").data(printDetails).enter()
 		.append("div")
 			.append('span')
-				.text(function(d){return d.print + " - ";})				
+				.text(function(d){return (d.print.length > 0) ? d.print + ": " : " - ";})				
 				.attr("class", "boldDetail")
 			.insert('span')
-				.text(function(d){return county[d.var];})
+				.text(function(d){
+					if (d.var != 'none'){
+						return (""+county[d.var]).indexOf('/') == -1 ? totalFormat(county[d.var]) : county[d.var];
+					}})
 				.attr("class", "normalDetail");
 
 	d3.select("#countyName").text(county.County);
